@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[40,)"
+loaderVersion="[42,)"
 license="All rights reserved"
 [[mods]] 
 modId="agrigrowth"
@@ -11,12 +11,18 @@ Growing tool for AgriCraft
 [[dependencies.agrigrowth]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.18.2,1.19)"
+    versionRange="[1.19.2,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.agrigrowth]]
     modId="agricraft"
-    mandatory=true
-    versionRange="[1.18.2,)"
+    mandatory=false
+    versionRange="[1.19.2]"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.agrigrowth]]
+    modId="mysticalagriculture"
+    mandatory=false
+    versionRange="[6.0.0,)"
     ordering="NONE"
     side="BOTH"
