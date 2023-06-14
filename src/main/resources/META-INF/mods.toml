@@ -1,17 +1,15 @@
 modLoader="javafml"
-loaderVersion="[42,)"
-license="All rights reserved"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
 [[mods]] 
-modId="agrigrowth"
-version="${file.jarVersion}"
-displayName="AgriGrowth"
-description='''
-Growing tool for AgriCraft
-'''
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+description='''${mod_description}'''
 [[dependencies.agrigrowth]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.19.2,)"
+    versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
 [[dependencies.agrigrowth]]
