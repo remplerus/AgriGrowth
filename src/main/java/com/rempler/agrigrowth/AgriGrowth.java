@@ -146,8 +146,6 @@ public class AgriGrowth
                         if (!(state.getBlock() instanceof AirBlock || Config.getBlacklist().contains(ForgeRegistries.BLOCKS.getKey(state.getBlock()).toString()))) {
                             if (ModList.get().isLoaded("mysticalagriculture")) {
                                 if (Config.activateMystAgri()) {
-                                    player.sendSystemMessage(Component.literal("Mystical Agriculture has no integration yet!"));
-                                    //TODO Mystical Agriculture re-enable
                                     MysticalAgriCompat.initMysticalAgriCompat(level, blockPos, state, player);
                                 } else {
                                     standardGrow(player, level, blockPos, state);
@@ -194,7 +192,7 @@ public class AgriGrowth
             double d0 = level.getRandom().nextDouble();
             for (int a = 0; a < 2; a++) {
                 ((ServerLevel) level).sendParticles((ServerPlayer) player, ParticleTypes.CLOUD, false, blockPos.getX() + d0,
-                        blockPos.getY() + d0, blockPos.getZ() + d0, 1, 0.5, 0.5, 0.5, 0.15);
+                        blockPos.getY() + d0, blockPos.getZ() + d0, 1, 0.5, 0.5, 0.5, 0.1);
             }
         }
     }
