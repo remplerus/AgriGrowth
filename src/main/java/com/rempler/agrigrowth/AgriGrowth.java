@@ -7,9 +7,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -32,26 +35,36 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.ForgeSoundType;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 import org.slf4j.Logger;
+
+import java.util.Objects;
 
 @SuppressWarnings("unused")
 @Mod("agrigrowth")
-public class AgriGrowth
-{
+public class AgriGrowth {
+    private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, "agrigrowth");
+    public static final RegistryObject<SoundEvent> FART = SOUNDS.register("fart", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("agrigrowth", "fart")));
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static int tickCounter = 0;
+    private static int fartCounter = 0;
 
     public AgriGrowth() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, "agrigrowth.toml");
         LOGGER.info("Loading AgriGrowth Mod");
         MinecraftForge.EVENT_BUS.addListener(AgriGrowth::playerTickEvent);
         MinecraftForge.EVENT_BUS.addListener(AgriGrowth::onRightClickBlockEvent);
+        SOUNDS.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
     public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
@@ -60,9 +73,16 @@ public class AgriGrowth
             return;
         }
         Player player = event.player;
-        if (player.isShiftKeyDown() && level.getRandom().nextDouble() < Config.getGrowSpeed()) {
+        if (player.isShiftKeyDown() && level.getRandom().nextDouble() < Config.getRandomSpeed() && tickCounter >= Config.getGrowSpeed()) {
+            tickCounter = 0;
             applyGrowing(player);
+            fartCounter++;
         }
+        if (fartCounter >= Config.getGrowSpeed() * 200) {
+            level.playSound(null, player.blockPosition(), FART.get(), SoundSource.NEUTRAL, 1.0f, 1.0f);
+            fartCounter = 0;
+        }
+        tickCounter++;
     }
 
     public static void onRightClickBlockEvent(PlayerInteractEvent.RightClickBlock event) {
@@ -140,11 +160,14 @@ public class AgriGrowth
                     if (ModList.get().isLoaded("agricraft") && Config.enablePosts()) {
                         player.sendSystemMessage(Component.literal("AgriCraft has no integration yet!"));
                         //TODO Agricraft re-enable
-                        AgriCraftCompat.initAgriCompat(level, blockPos, player);
-                    } else if (level.getRandom().nextDouble() < Config.getGrowSpeed()) {
+                        if (Config.activateAgriCraft()) {
+                            AgriCraftCompat.initAgriCompat(level, blockPos, player);
+                        }
+                    } else if (level.getRandom().nextDouble() < Config.getRandomSpeed()) {
                         BlockState state = level.getBlockState(blockPos);
-                        if (!(state.getBlock() instanceof AirBlock || Config.getBlacklist().contains(ForgeRegistries.BLOCKS.getKey(state.getBlock()).toString()))) {
-                            if (ModList.get().isLoaded("mysticalagriculture")) {
+                        if (!(state.getBlock() instanceof AirBlock || Config.getBlacklist().contains(Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(state.getBlock())).toString()))) {
+                            if (ModList.get().isLoaded("mysticalagriculture") && Config.enablePosts()) {
+                                player.sendSystemMessage(Component.literal("Mystical Agriculture has no integration yet!"));
                                 if (Config.activateMystAgri()) {
                                     MysticalAgriCompat.initMysticalAgriCompat(level, blockPos, state, player);
                                 } else {
@@ -192,7 +215,7 @@ public class AgriGrowth
             double d0 = level.getRandom().nextDouble();
             for (int a = 0; a < 2; a++) {
                 ((ServerLevel) level).sendParticles((ServerPlayer) player, ParticleTypes.CLOUD, false, blockPos.getX() + d0,
-                        blockPos.getY() + d0, blockPos.getZ() + d0, 1, 0.5, 0.5, 0.5, 0.1);
+                        blockPos.getY() + d0, blockPos.getZ() + d0, 1, 0.5, 0.5, 0.5, 0.01);
             }
         }
     }

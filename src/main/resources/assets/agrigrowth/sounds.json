@@ -1,0 +1,13 @@
+{
+  "fart": {
+    "category": "neutral",
+    "subtitle": "agrigrowth.fart.subtitle",
+    "sounds": [
+      "agrigrowth:fart",
+      "agrigrowth:longfart",
+      "agrigrowth:xtralongfart",
+      "agrigrowth:shortfart",
+      "agrigrowth:hardfart"
+    ]
+  }
+}

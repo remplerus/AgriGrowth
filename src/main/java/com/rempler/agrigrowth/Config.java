@@ -8,21 +8,26 @@ import java.util.List;
 public class Config {
     public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     public static final ForgeConfigSpec SPEC;
-    private static final ForgeConfigSpec.DoubleValue GROW_SPEED;
+    private static final ForgeConfigSpec.DoubleValue RANDOM_SPEED;
+    private static final ForgeConfigSpec.IntValue GROW_SPEED;
     private static final ForgeConfigSpec.IntValue GROW_RANGE;
     private static final ForgeConfigSpec.IntValue GROW_HEIGHT;
     private static final ForgeConfigSpec.ConfigValue<List<String>> BLACKLIST;
     private static final ForgeConfigSpec.BooleanValue MYST_AGRI;
     private static final ForgeConfigSpec.BooleanValue ENABLE_POSTS;
     private static final ForgeConfigSpec.BooleanValue SPAWN_PARTICLES;
+    private static final ForgeConfigSpec.BooleanValue AGRICRAFT;
 
-    public static Double getGrowSpeed() { return GROW_SPEED.get(); }
+    public static Double getRandomSpeed() { return RANDOM_SPEED.get(); }
+    public static int getGrowSpeed() { return GROW_SPEED.get(); }
     public static int getGrowRange() { return GROW_RANGE.get(); }
     public static int getGrowHeight() { return GROW_HEIGHT.get(); }
     public static List<String> getBlacklist() { return BLACKLIST.get(); }
     public static boolean activateMystAgri() { return MYST_AGRI.get(); }
+    public static boolean activateAgriCraft() { return AGRICRAFT.get(); }
     public static boolean enablePosts() { return ENABLE_POSTS.get(); }
     public static boolean shouldSpawnParticles() { return SPAWN_PARTICLES.get(); }
+
 
     static {
         List<String> blacklist = new ArrayList<>();
@@ -33,7 +38,8 @@ public class Config {
         blacklist.add("minecraft:grass");
         blacklist.add("minecraft:tall_grass");
         BUILDER.push("Grow speed");
-        GROW_SPEED = BUILDER.defineInRange("grow_speed", 0.2, 0, 1);
+        RANDOM_SPEED = BUILDER.comment("defines how lucky you are with growing ").defineInRange("random_speed", 0.1, 0, 1);
+        GROW_SPEED = BUILDER.comment("defines how fast the random_speed should trigger, executes every here defined ticks").defineInRange("grow_speed", 10, 1, 10000);
         BUILDER.pop();
         BUILDER.push("Grow range");
         GROW_RANGE = BUILDER.defineInRange("grow_range", 4, 1, 128);
@@ -46,6 +52,9 @@ public class Config {
         BUILDER.pop();
         BUILDER.push("Activate Mystical Agriculture");
         MYST_AGRI = BUILDER.define("activate_myst_agri", false);
+        BUILDER.pop();
+        BUILDER.push("Activate AgriCraft");
+        AGRICRAFT = BUILDER.define("activate_agricraft", false);
         BUILDER.pop();
         BUILDER.push("Enable posts");
         ENABLE_POSTS = BUILDER.define("enable_posts", true);
