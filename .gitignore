@@ -18,3 +18,4 @@ gradle-app.setting
 .classpath
 run
 /.idea/
+/runs/

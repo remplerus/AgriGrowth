@@ -1,22 +1,22 @@
 package com.rempler.agrigrowth;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Config {
-    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-    public static final ForgeConfigSpec SPEC;
-    private static final ForgeConfigSpec.DoubleValue RANDOM_SPEED;
-    private static final ForgeConfigSpec.IntValue GROW_SPEED;
-    private static final ForgeConfigSpec.IntValue GROW_RANGE;
-    private static final ForgeConfigSpec.IntValue GROW_HEIGHT;
-    private static final ForgeConfigSpec.ConfigValue<List<String>> BLACKLIST;
-    private static final ForgeConfigSpec.BooleanValue MYST_AGRI;
-    private static final ForgeConfigSpec.BooleanValue ENABLE_POSTS;
-    private static final ForgeConfigSpec.BooleanValue SPAWN_PARTICLES;
-    private static final ForgeConfigSpec.BooleanValue AGRICRAFT;
+    public static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    public static final ModConfigSpec SPEC;
+    private static final ModConfigSpec.DoubleValue RANDOM_SPEED;
+    private static final ModConfigSpec.IntValue GROW_SPEED;
+    private static final ModConfigSpec.IntValue GROW_RANGE;
+    private static final ModConfigSpec.IntValue GROW_HEIGHT;
+    private static final ModConfigSpec.ConfigValue<List<String>> BLACKLIST;
+    private static final ModConfigSpec.BooleanValue MYST_AGRI;
+    private static final ModConfigSpec.BooleanValue ENABLE_POSTS;
+    private static final ModConfigSpec.BooleanValue SPAWN_PARTICLES;
+    private static final ModConfigSpec.BooleanValue AGRICRAFT;
 
     public static Double getRandomSpeed() { return RANDOM_SPEED.get(); }
     public static int getGrowSpeed() { return GROW_SPEED.get(); }

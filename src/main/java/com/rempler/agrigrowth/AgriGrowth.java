@@ -34,18 +34,17 @@ import net.minecraft.world.level.block.SugarCaneBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.ForgeSoundType;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.registries.RegistryObject;
 import org.slf4j.Logger;
 
 import java.util.Objects;
@@ -62,8 +61,8 @@ public class AgriGrowth {
     public AgriGrowth() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, "agrigrowth.toml");
         LOGGER.info("Loading AgriGrowth Mod");
-        MinecraftForge.EVENT_BUS.addListener(AgriGrowth::playerTickEvent);
-        MinecraftForge.EVENT_BUS.addListener(AgriGrowth::onRightClickBlockEvent);
+        NeoForge.EVENT_BUS.addListener(AgriGrowth::playerTickEvent);
+        NeoForge.EVENT_BUS.addListener(AgriGrowth::onRightClickBlockEvent);
         SOUNDS.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
