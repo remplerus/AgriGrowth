@@ -1,7 +1,6 @@
 package com.rempler.agrigrowth;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +16,8 @@ public class Config {
     private static final ModConfigSpec.BooleanValue ENABLE_POSTS;
     private static final ModConfigSpec.BooleanValue SPAWN_PARTICLES;
     private static final ModConfigSpec.BooleanValue AGRICRAFT;
+    private static final ModConfigSpec.BooleanValue TWERKING;
+    private static final ModConfigSpec.BooleanValue POOP;
 
     public static Double getRandomSpeed() { return RANDOM_SPEED.get(); }
     public static int getGrowSpeed() { return GROW_SPEED.get(); }
@@ -27,6 +28,8 @@ public class Config {
     public static boolean activateAgriCraft() { return AGRICRAFT.get(); }
     public static boolean enablePosts() { return ENABLE_POSTS.get(); }
     public static boolean shouldSpawnParticles() { return SPAWN_PARTICLES.get(); }
+    public static boolean shouldTwerk() { return TWERKING.get(); }
+    public static boolean shouldPoopSpawn() { return POOP.get(); }
 
 
     static {
@@ -61,6 +64,12 @@ public class Config {
         BUILDER.pop();
         BUILDER.push("Should spawn particles");
         SPAWN_PARTICLES = BUILDER.define("spawn_particles", true);
+        BUILDER.pop();
+        BUILDER.push("Should twerking work");
+        TWERKING = BUILDER.define("twerking", true);
+        BUILDER.pop();
+        BUILDER.push("Should poop spawn");
+        POOP = BUILDER.define("poop", true);
         BUILDER.pop();
 
         SPEC = BUILDER.build();

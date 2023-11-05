@@ -8,6 +8,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
+//TODO re-enable when Mystical Agriculture is updated
 public class MysticalAgriCompat {
     private MysticalAgriCompat() {}
 

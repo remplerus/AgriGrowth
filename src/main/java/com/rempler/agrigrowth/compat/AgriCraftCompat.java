@@ -7,6 +7,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
+//TODO re-enable when AgriCraft is updated
 public class AgriCraftCompat {
     private AgriCraftCompat(){}
     private final RandomSource rand = RandomSource.create();

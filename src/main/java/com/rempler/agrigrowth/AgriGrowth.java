@@ -10,12 +10,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.Item;
@@ -41,6 +43,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.entity.player.BonemealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.ForgeRegistries;
@@ -49,39 +52,66 @@ import org.slf4j.Logger;
 
 import java.util.Objects;
 
-@SuppressWarnings("unused")
-@Mod("agrigrowth")
+@Mod(AgriGrowth.MOD_ID)
 public class AgriGrowth {
-    private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, "agrigrowth");
-    public static final RegistryObject<SoundEvent> FART = SOUNDS.register("fart", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("agrigrowth", "fart")));
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
+    private static boolean hasPlayedSound = false;
     private static int tickCounter = 0;
     private static int fartCounter = 0;
+    public static final String MOD_ID = "agrigrowth";
+    public static TagKey<Block> WHITELIST = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MOD_ID, "whitelist"));
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
+    public static final RegistryObject<Item> POOP = ITEMS.register("poop", PoopItem::new);
 
     public AgriGrowth() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, "agrigrowth.toml");
-        LOGGER.info("Loading AgriGrowth Mod");
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, MOD_ID + ".toml");
+        LOGGER.info("Loading "+ MOD_ID + " Mod");
         NeoForge.EVENT_BUS.addListener(AgriGrowth::playerTickEvent);
         NeoForge.EVENT_BUS.addListener(AgriGrowth::onRightClickBlockEvent);
-        SOUNDS.register(FMLJavaModLoadingContext.get().getModEventBus());
+        NeoForge.EVENT_BUS.addListener(AgriGrowth::onBonemealEvent);
+        ModSounds.init(FMLJavaModLoadingContext.get().getModEventBus());
+        ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
     }
 
     public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
         Level level = event.player.level();
-        if (level.isClientSide) {
-            return;
-        }
         Player player = event.player;
-        if (player.isShiftKeyDown() && level.getRandom().nextDouble() < Config.getRandomSpeed() && tickCounter >= Config.getGrowSpeed()) {
-            tickCounter = 0;
-            applyGrowing(player);
-            fartCounter++;
+        if (player.isShiftKeyDown() || player.isSprinting()) {
+            if (Config.shouldTwerk() && level.getRandom().nextDouble() < Config.getRandomSpeed() && tickCounter >= Config.getGrowSpeed()) {
+                if (level.isClientSide) {
+                    return;
+                }
+                tickCounter = 0;
+                applyGrowing(player);
+            }
+            if (Config.shouldPoopSpawn()) {
+                fartCounter++;
+                if (fartCounter > 200) {
+                    if (level.getRandom().nextInt() * 200 <= fartCounter) {
+                        if (level.isClientSide) {
+                            if (hasPlayedSound) {
+                                return;
+                            }
+                            level.playSound(player, player.getX(), player.getY(), player.getZ(), ModSounds.FART.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
+                            hasPlayedSound = true;
+                        } else if (hasPlayedSound) {
+                            level.addFreshEntity(new ItemEntity(level, player.getX(), player.getY(), player.getZ(), new ItemStack(POOP.get())));
+                            fartCounter = 0;
+                            hasPlayedSound = false;
+                        }
+                    }
+                }
+            }
+            tickCounter++;
         }
-        if (fartCounter >= Config.getGrowSpeed() * 200) {
-            level.playSound(null, player.blockPosition(), FART.get(), SoundSource.NEUTRAL, 1.0f, 1.0f);
-            fartCounter = 0;
+    }
+
+    public static void onBonemealEvent(BonemealEvent event) {
+        if (event.getStack().is(POOP.get())) {
+            if (!(event.getBlock().is(BlockTags.CROPS) || event.getBlock().is(BlockTags.SAPLINGS) || event.getBlock().is(WHITELIST))) {
+                event.setCanceled(true);
+            }
         }
-        tickCounter++;
     }
 
     public static void onRightClickBlockEvent(PlayerInteractEvent.RightClickBlock event) {
@@ -156,17 +186,20 @@ public class AgriGrowth {
             for (int z = -a; z <= a; z++) {
                 for (int y = -b; y <= b; y++) {
                     BlockPos blockPos = new BlockPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
-                    if (ModList.get().isLoaded("agricraft") && Config.enablePosts()) {
-                        player.sendSystemMessage(Component.literal("AgriCraft has no integration yet!"));
-                        //TODO Agricraft re-enable
+                    if (ModList.get().isLoaded("agricraft")) {
+                        if (Config.enablePosts()) {
+                            player.sendSystemMessage(Component.literal("AgriCraft has no integration yet!"));
+                        }
                         if (Config.activateAgriCraft()) {
                             AgriCraftCompat.initAgriCompat(level, blockPos, player);
                         }
                     } else if (level.getRandom().nextDouble() < Config.getRandomSpeed()) {
                         BlockState state = level.getBlockState(blockPos);
                         if (!(state.getBlock() instanceof AirBlock || Config.getBlacklist().contains(Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(state.getBlock())).toString()))) {
-                            if (ModList.get().isLoaded("mysticalagriculture") && Config.enablePosts()) {
-                                player.sendSystemMessage(Component.literal("Mystical Agriculture has no integration yet!"));
+                            if (ModList.get().isLoaded("mysticalagriculture")) {
+                                if (Config.enablePosts()) {
+                                    player.sendSystemMessage(Component.literal("Mystical Agriculture has no integration yet!"));
+                                }
                                 if (Config.activateMystAgri()) {
                                     MysticalAgriCompat.initMysticalAgriCompat(level, blockPos, state, player);
                                 } else {
@@ -187,10 +220,10 @@ public class AgriGrowth {
             if (isMature(state)) {
                 return;
             }
-            BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL), (Level) level, blockPos, player);
+            BoneMealItem.applyBonemeal(POOP.get().getDefaultInstance(), (Level) level, blockPos, player);
             spawnParticles(player, level, blockPos);
         } else if (state.getBlock() instanceof BonemealableBlock) {
-            BoneMealItem.applyBonemeal(new ItemStack(Items.BONE_MEAL), (Level) level, blockPos, player);
+            BoneMealItem.applyBonemeal(POOP.get().getDefaultInstance(), (Level) level, blockPos, player);
             spawnParticles(player, level, blockPos);
         }
     }
@@ -213,6 +246,7 @@ public class AgriGrowth {
         if (Config.shouldSpawnParticles()) {
             double d0 = level.getRandom().nextDouble();
             for (int a = 0; a < 2; a++) {
+                //TODO: make custom particle
                 ((ServerLevel) level).sendParticles((ServerPlayer) player, ParticleTypes.CLOUD, false, blockPos.getX() + d0,
                         blockPos.getY() + d0, blockPos.getZ() + d0, 1, 0.5, 0.5, 0.5, 0.01);
             }
