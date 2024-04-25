@@ -18,6 +18,7 @@ public class Config {
     private static final ModConfigSpec.BooleanValue AGRICRAFT;
     private static final ModConfigSpec.BooleanValue TWERKING;
     private static final ModConfigSpec.BooleanValue POOP;
+    private static final ModConfigSpec.BooleanValue POOP_SOUND;
 
     public static Double getRandomSpeed() { return RANDOM_SPEED.get(); }
     public static int getGrowSpeed() { return GROW_SPEED.get(); }
@@ -30,6 +31,7 @@ public class Config {
     public static boolean shouldSpawnParticles() { return SPAWN_PARTICLES.get(); }
     public static boolean shouldTwerk() { return TWERKING.get(); }
     public static boolean shouldPoopSpawn() { return POOP.get(); }
+    public static boolean shouldPoopSoubdPlay() { return POOP_SOUND.get(); }
 
 
     static {
@@ -70,6 +72,9 @@ public class Config {
         BUILDER.pop();
         BUILDER.push("Should poop spawn");
         POOP = BUILDER.define("poop", true);
+        BUILDER.pop();
+        BUILDER.push("Should poop sound play");
+        POOP_SOUND = BUILDER.define("poop_sound", true);
         BUILDER.pop();
 
         SPEC = BUILDER.build();

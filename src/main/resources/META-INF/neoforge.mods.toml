@@ -8,19 +8,19 @@ displayName="${mod_name}"
 description='''${mod_description}'''
 [[dependencies.agrigrowth]]
     modId="minecraft"
-    mandatory=true
+    type="required"
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
 [[dependencies.agrigrowth]]
     modId="agricraft"
-    mandatory=false
+    type="optional"
     versionRange="[1.20,)"
     ordering="NONE"
     side="BOTH"
 [[dependencies.agrigrowth]]
     modId="mysticalagriculture"
-    mandatory=false
+    type="optional"
     versionRange="[7.0.0,)"
     ordering="NONE"
     side="BOTH"

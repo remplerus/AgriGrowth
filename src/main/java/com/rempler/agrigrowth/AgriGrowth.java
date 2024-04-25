@@ -6,6 +6,7 @@ import com.rempler.agrigrowth.compat.MysticalAgriCompat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -36,18 +37,17 @@ import net.minecraft.world.level.block.SugarCaneBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
-import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.neoforge.event.entity.player.BonemealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.ForgeRegistries;
-import net.neoforged.neoforge.registries.RegistryObject;
 import org.slf4j.Logger;
 
 import java.util.Objects;
@@ -59,18 +59,18 @@ public class AgriGrowth {
     private static int tickCounter = 0;
     private static int fartCounter = 0;
     public static final String MOD_ID = "agrigrowth";
-    public static TagKey<Block> WHITELIST = TagKey.create(ForgeRegistries.BLOCKS.getRegistryKey(), new ResourceLocation(MOD_ID, "whitelist"));
-    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
-    public static final RegistryObject<Item> POOP = ITEMS.register("poop", PoopItem::new);
+    public static TagKey<Block> WHITELIST = TagKey.create(BuiltInRegistries.BLOCK.key(), new ResourceLocation(MOD_ID, "whitelist"));
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(BuiltInRegistries.ITEM, MOD_ID);
+    public static final DeferredHolder<Item, PoopItem> POOP = ITEMS.register("poop", PoopItem::new);
 
-    public AgriGrowth() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC, MOD_ID + ".toml");
+    public AgriGrowth(IEventBus eventBus, ModContainer modContainer) {
+        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC, MOD_ID + ".toml");
         LOGGER.info("Loading "+ MOD_ID + " Mod");
         NeoForge.EVENT_BUS.addListener(AgriGrowth::playerTickEvent);
         NeoForge.EVENT_BUS.addListener(AgriGrowth::onRightClickBlockEvent);
         NeoForge.EVENT_BUS.addListener(AgriGrowth::onBonemealEvent);
-        ModSounds.init(FMLJavaModLoadingContext.get().getModEventBus());
-        ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
+        ModSounds.init(eventBus);
+        ITEMS.register(eventBus);
     }
 
     public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
@@ -195,7 +195,7 @@ public class AgriGrowth {
                         }
                     } else if (level.getRandom().nextDouble() < Config.getRandomSpeed()) {
                         BlockState state = level.getBlockState(blockPos);
-                        if (!(state.getBlock() instanceof AirBlock || Config.getBlacklist().contains(Objects.requireNonNull(ForgeRegistries.BLOCKS.getKey(state.getBlock())).toString()))) {
+                        if (!(state.getBlock() instanceof AirBlock || Config.getBlacklist().contains(Objects.requireNonNull(BuiltInRegistries.BLOCK.getKey(state.getBlock())).toString()))) {
                             if (ModList.get().isLoaded("mysticalagriculture")) {
                                 if (Config.enablePosts()) {
                                     player.sendSystemMessage(Component.literal("Mystical Agriculture has no integration yet!"));
@@ -230,16 +230,12 @@ public class AgriGrowth {
 
     private static boolean isMature(BlockState state) {
         Block block = state.getBlock();
-        if (block instanceof CocoaBlock) {
-            return state.getValue(CocoaBlock.AGE) >= CocoaBlock.MAX_AGE;
-        }
-        else if (block instanceof CropBlock cropBlock) {
-            return cropBlock.isMaxAge(state);
-        }
-        else if (block instanceof NetherWartBlock) {
-            return state.getValue(NetherWartBlock.AGE) >= NetherWartBlock.MAX_AGE;
-        }
-        return false;
+        return switch (block) {
+            case CocoaBlock ignored -> state.getValue(CocoaBlock.AGE) >= CocoaBlock.MAX_AGE;
+            case CropBlock cropBlock -> cropBlock.isMaxAge(state);
+            case NetherWartBlock ignored2 -> state.getValue(NetherWartBlock.AGE) >= NetherWartBlock.MAX_AGE;
+            default -> false;
+        };
     }
 
     public static void spawnParticles(Player player, LevelAccessor level, BlockPos blockPos) {
