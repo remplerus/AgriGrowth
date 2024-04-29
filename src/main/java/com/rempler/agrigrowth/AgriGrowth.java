@@ -43,9 +43,9 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.neoforge.event.entity.player.BonemealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
@@ -73,9 +73,9 @@ public class AgriGrowth {
         ITEMS.register(eventBus);
     }
 
-    public static void playerTickEvent(TickEvent.PlayerTickEvent event) {
-        Level level = event.player.level();
-        Player player = event.player;
+    public static void playerTickEvent(PlayerTickEvent.Post event) {
+        Level level = event.getEntity().level();
+        Player player = event.getEntity();
         if (player.isShiftKeyDown() || player.isSprinting()) {
             if (Config.shouldTwerk() && level.getRandom().nextDouble() < Config.getRandomSpeed() && tickCounter >= Config.getGrowSpeed()) {
                 if (level.isClientSide) {
